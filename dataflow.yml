@@ -10,8 +10,18 @@ nodes:
         - image
       inputs:
         ready_0: tokio_spawn/ready
-        ready_1: tokio_spawn_blocking/ready
+       # ready_1: tokio_spawn_blocking/ready
         ready_2: rayon_spawn/ready
+        ready_3: pollster_rayon/ready
+
+
+  - id: pollster_rayon
+    custom:
+      run: ./target/release/pollster_rayon
+      inputs:
+        image: sender/image
+      outputs:
+        - ready
 
   - id: tokio_spawn
     custom:
@@ -22,13 +32,13 @@ nodes:
         - ready
 
 
-  - id: tokio_spawn_blocking
-    custom:
-      run: ./target/release/tokio_spawn_blocking
-      inputs:
-        image: sender/image
-      outputs:
-        - ready
+  # - id: tokio_spawn_blocking
+    # custom:
+      # run: ./target/release/tokio_spawn_blocking
+      # inputs:
+        # image: sender/image
+      # outputs:
+        # - ready
   
   - id: rayon_spawn
     custom:
@@ -37,4 +47,3 @@ nodes:
         image: sender/image
       outputs:
         - ready
-

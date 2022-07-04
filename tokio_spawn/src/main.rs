@@ -25,7 +25,7 @@ async fn main() -> eyre::Result<()> {
     let input = inputs.next().await.unwrap();
     let string_context = String::from_utf8_lossy(&input.data);
     let context = deserialize_context(&string_context);
-    for call_id in 0..40 {
+    for call_id in 0..100 {
         let _span = tracer.start_with_context(format!("tokio.spawn.{call_id}"), &context);
         let input = match inputs.next().await {
             Some(input) => input,
@@ -48,7 +48,7 @@ async fn main() -> eyre::Result<()> {
             //let input_tensor_values = vec![image];
             let results = run(&model, image);
             // find and display the max value with its index
-            let best_result = postprocess(results, class_labels);
+            let best_result = postprocess(results, &class_labels);
         });
     }
 

@@ -57,7 +57,7 @@ pub fn preprocess(data: Vec<u8>) -> Tensor {
     .into()
 }
 
-pub fn postprocess(results: SmallVec<[Arc<Tensor>; 4]>, class_labels: Arc<Vec<String>>) -> String {
+pub fn postprocess(results: SmallVec<[Arc<Tensor>; 4]>, class_labels: &[String]) -> String {
     let best = results[0]
         .to_array_view::<f32>()
         .unwrap()
@@ -70,7 +70,7 @@ pub fn postprocess(results: SmallVec<[Arc<Tensor>; 4]>, class_labels: Arc<Vec<St
 }
 
 pub fn run(
-    model: &Arc<SimplePlan<TypedFact, Box<dyn TypedOp>, Graph<TypedFact, Box<dyn TypedOp>>>>,
+    model: &SimplePlan<TypedFact, Box<dyn TypedOp>, Graph<TypedFact, Box<dyn TypedOp>>>,
     image: Tensor,
 ) -> TVec<Arc<Tensor>> {
     model.run(tvec!(image)).unwrap()

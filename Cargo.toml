@@ -7,4 +7,5 @@ members = [
   "tokio_spawn",
   "tokio_spawn_blocking",
   "rayon_spawn",
+  "pollster_rayon",
 ]

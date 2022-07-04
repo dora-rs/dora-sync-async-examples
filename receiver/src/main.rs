@@ -79,7 +79,7 @@ fn main() -> eyre::Result<()> {
         // let model = &model;
 
         let mut inputs = node.inputs().block_on()?;
-        for call_id in 0..40 {
+        for call_id in 0..100 {
             let _span = tracer.start_with_context(format!("call-{call_id}"), &context);
             let input = match inputs.next().block_on() {
                 Some(input) => input,

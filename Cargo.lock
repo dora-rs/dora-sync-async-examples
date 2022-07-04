@@ -2063,6 +2063,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5da3b0203fd7ee5720aa0b5e790b591aa5d3f41c3ed2c34a3a393382198af2f7"
 
 [[package]]
+name = "pollster_rayon"
+version = "0.1.0"
+dependencies = [
+ "common",
+ "dora-node-api",
+ "dora-tracing",
+ "eyre",
+ "futures",
+ "image",
+ "onnxruntime",
+ "opentelemetry",
+ "pollster",
+ "rayon",
+ "tokio",
+ "tract-onnx",
+]
+
+[[package]]
 name = "ppv-lite86"
 version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
