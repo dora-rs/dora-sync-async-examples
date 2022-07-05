@@ -27,12 +27,12 @@ fn main() -> eyre::Result<()> {
     // to more cleanly forward errors if the `unwrap()`
     // panics.
     let pool = rayon::ThreadPoolBuilder::new()
-        .num_threads(2)
+        .num_threads(4)
         .build()
         .unwrap();
     let rt = Builder::new_current_thread()
         .enable_all()
-        .worker_threads(2)
+        .worker_threads(1)
         .build()
         .unwrap();
     let (tx, mut rx) = mpsc::channel(16);

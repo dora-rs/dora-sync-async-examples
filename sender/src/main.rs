@@ -32,7 +32,7 @@ async fn main() -> eyre::Result<()> {
     // make sure that every node is ready before sending data.
     let _input = stream.next().await.unwrap();
     let _input = stream.next().await.unwrap();
-    let _input = stream.next().await.unwrap();
+    // let _input = stream.next().await.unwrap();
 
     let tracer = init_tracing("sender").unwrap();
     let span = tracer.start("root-sender");

@@ -18,13 +18,13 @@ use std::{
     path::Path,
 };
 
-#[tokio::main(worker_threads = 2)]
+#[tokio::main(worker_threads = 1)]
 async fn main() -> eyre::Result<()> {
     let model = Arc::new(load_model_tract());
     let mut handles = Vec::with_capacity(40);
     let class_labels = Arc::new(get_imagenet_labels());
     let pool = rayon::ThreadPoolBuilder::new()
-        .num_threads(2)
+        .num_threads(5)
         .build()
         .unwrap();
     let node = DoraNode::init_from_env().await?;

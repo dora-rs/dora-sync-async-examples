@@ -11,7 +11,7 @@ nodes:
       inputs:
         ready_0: tokio_spawn/ready
        # ready_1: tokio_spawn_blocking/ready
-        ready_2: rayon_spawn/ready
+   #     ready_2: rayon_spawn/ready
         ready_3: pollster_rayon/ready
 
 
@@ -40,10 +40,10 @@ nodes:
       # outputs:
         # - ready
   
-  - id: rayon_spawn
-    custom:
-      run: ./target/release/rayon_spawn
-      inputs:
-        image: sender/image
-      outputs:
-        - ready
+  # - id: rayon_spawn
+    # custom:
+      # run: ./target/release/rayon_spawn
+      # inputs:
+        # image: sender/image
+      # outputs:
+        # - ready

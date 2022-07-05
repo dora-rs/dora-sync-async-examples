@@ -10,7 +10,7 @@ use opentelemetry::{
 };
 use std::sync::Arc;
 
-#[tokio::main(worker_threads = 2)]
+#[tokio::main(worker_threads = 5)]
 async fn main() -> eyre::Result<()> {
     let model = Arc::new(load_model_tract());
     // let mut handles = Vec::with_capacity(40);
