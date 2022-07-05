@@ -27,7 +27,7 @@ fn main() -> eyre::Result<()> {
     // to more cleanly forward errors if the `unwrap()`
     // panics.
     let pool = rayon::ThreadPoolBuilder::new()
-        .num_threads(4)
+        .num_threads(5)
         .build()
         .unwrap();
     let rt = Builder::new_current_thread()
@@ -37,7 +37,7 @@ fn main() -> eyre::Result<()> {
         .unwrap();
     let (tx, mut rx) = mpsc::channel(16);
     let (tx_context, mut rx_context) = mpsc::channel(16);
-
+    let tracer = init_tracing("tokio.rayon").unwrap();
     std::thread::spawn(move || {
         rt.block_on(async move {
             let node = DoraNode::init_from_env().await.unwrap();
@@ -65,13 +65,12 @@ fn main() -> eyre::Result<()> {
             }
         });
     });
+    let context = rx_context.blocking_recv().unwrap();
 
-    let tracer = init_tracing("pollster.rayon").unwrap();
     pool.scope(|s| {
-        let context = rx_context.blocking_recv().unwrap();
         for call_id in 0..100 {
             let data = rx.blocking_recv().unwrap();
-            let _span = tracer.start_with_context(format!("pollster.rayon.{call_id}"), &context);
+            let _span = tracer.start_with_context(format!("tokio.rayon.{call_id}"), &context);
             s.spawn(|_| {
                 let _context = Context::current_with_span(_span);
                 let tracer = global::tracer("name");

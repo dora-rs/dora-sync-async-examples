@@ -9,23 +9,23 @@ nodes:
       outputs:
         - image
       inputs:
-        ready_0: tokio_spawn/ready
-       # ready_1: tokio_spawn_blocking/ready
-   #     ready_2: rayon_spawn/ready
-        ready_3: pollster_rayon/ready
+   #     ready_0: tokio_spawn/ready
+        ready_1: tokio_spawn_blocking/ready
+    #    ready_2: rayon_spawn/ready
+        ready_3: tokio_rayon/ready
 
 
-  - id: pollster_rayon
+  - id: tokio_rayon
     custom:
-      run: ./target/release/pollster_rayon
+      run: ./target/release/tokio_rayon
       inputs:
         image: sender/image
       outputs:
         - ready
 
-  - id: tokio_spawn
+  - id: tokio_spawn_blocking
     custom:
-      run: ./target/release/tokio_spawn
+      run: flamegraph -o tokio_spawn.svg -- ./target/release/tokio_spawn_blocking
       inputs:
         image: sender/image
       outputs:

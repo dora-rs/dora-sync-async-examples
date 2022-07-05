@@ -1,5 +1,5 @@
 [package]
-name = "pollster_rayon"
+name = "tokio_rayon"
 version = "0.1.0"
 edition = "2021"
 
@@ -16,5 +16,5 @@ opentelemetry = { version = "0.17", features = ["rt-tokio", "metrics"] }
 rayon = "1.5.3"
 pollster = "0.2.5"
 tract-onnx = "0.17"
-onnxruntime = { path = "../../onnxruntime-rs/onnxruntime", features = ["cuda"] }
+
 common = { path = "../common" }

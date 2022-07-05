@@ -1,7 +1,7 @@
 use dora_tracing::init_tracing;
 use futures::StreamExt;
 use image::{ImageBuffer, Rgb};
-use onnxruntime::ndarray::ArrayBase;
+// use onnxruntime::ndarray::ArrayBase;
 use opentelemetry::{
     global,
     trace::{TraceContextExt, Tracer},
@@ -21,11 +21,12 @@ pub fn load_model_tract(
 ) -> SimplePlan<TypedFact, Box<dyn TypedOp>, Graph<TypedFact, Box<dyn TypedOp>>> {
     tract_onnx::onnx()
         // load the model
-        .model_for_path("./data/efficientnet-lite4-11.onnx")
+        //.model_for_path("./data/efficientnet-lite4-11.onnx")
+        .model_for_path("./data/squeezenet1.1-7.onnx")
         .unwrap()
         // specify input type and shape
-        .with_input_fact(0, f32::fact(&[1i32, 224, 224, 3]).into())
-        .unwrap()
+        //.with_input_fact(0, f32::fact(&[1i32, 3, 224, 224]).into())
+        //.unwrap()
         // optimize the model
         .into_optimized()
         .unwrap()
@@ -38,7 +39,7 @@ pub fn get_imagenet_labels() -> Vec<String> {
     // Download the ImageNet class labels, matching SqueezeNet's classes.
     let labels_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../data")
-        .join("imagenet_slim_labels.txt");
+        .join("labels_map.txt");
     let file = BufReader::new(fs::File::open(labels_path).unwrap());
 
     file.lines().map(|line| line.unwrap()).collect()
@@ -49,7 +50,7 @@ pub fn preprocess(data: Vec<u8>) -> Tensor {
         image::ImageBuffer::from_vec(1600, 1065, data).unwrap();
     let resized =
         image::imageops::resize(&image, 224, 224, ::image::imageops::FilterType::Triangle);
-    onnxruntime::ndarray::Array::from_shape_fn((1, 224, 224, 3), |(_, y, x, c)| {
+    tract_ndarray::Array4::from_shape_fn((1, 3, 224, 224), |(_, c, x, y)| {
         let mean = [0.485, 0.456, 0.406][c];
         let std = [0.229, 0.224, 0.225][c];
         (resized[(x as _, y as _)][c] as f32 / 255.0 - mean) / std

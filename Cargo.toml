@@ -3,9 +3,8 @@
 members = [
   "common",
   "sender",
-  "receiver",
   "tokio_spawn",
   "tokio_spawn_blocking",
   "rayon_spawn",
-  "pollster_rayon",
+  "tokio_rayon",
 ]

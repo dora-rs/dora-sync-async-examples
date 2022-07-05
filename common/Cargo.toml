@@ -10,11 +10,11 @@ eyre = "0.6.7"
 image = "0.24"
 futures = "0.3.21"
 dora-tracing = { path = "../../dora/tracing" }
-opentelemetry = { git = "https://github.com/open-telemetry/opentelemetry-rust", features = [
+opentelemetry = { version = "0.17", features = [
   "rt-tokio",
   "metrics",
 ] }
 rayon = "1.5.3"
 pollster = "0.2.5"
 tract-onnx = "0.17"
-onnxruntime = { path = "../../onnxruntime-rs/onnxruntime", features = ["cuda"] }
+# onnxruntime = { path = "../../onnxruntime-rs/onnxruntime", features = ["cuda"] }

@@ -4,7 +4,6 @@ use common::*;
 use dora_tracing::{deserialize_context, init_tracing};
 use futures::StreamExt;
 use image::{ImageBuffer, Rgb};
-use onnxruntime::ndarray::ArrayBase;
 use opentelemetry::{
     global,
     trace::{TraceContextExt, Tracer},

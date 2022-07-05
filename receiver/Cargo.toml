@@ -15,5 +15,5 @@ dora-tracing = { path = "../../dora/tracing" }
 rayon = "1.5.3"
 pollster = "0.2.5"
 tract-onnx = "0.17"
-onnxruntime = { path = "../../onnxruntime-rs/onnxruntime", features = ["cuda"] }
+
 opentelemetry = { version = "0.17", features = ["rt-tokio", "metrics"] }
