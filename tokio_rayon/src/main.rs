@@ -2,20 +2,21 @@ use dora_node_api::{self, config::DataId, DoraNode};
 
 use common::*;
 use dora_tracing::{deserialize_context, init_tracing};
-use futures::{StreamExt, TryFutureExt};
+use futures::StreamExt;
 
 use opentelemetry::{
     global,
     trace::{TraceContextExt, Tracer},
     Context,
 };
-use pollster::FutureExt as _;
 
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use std::sync::{Arc, Mutex};
 use tokio::runtime::Builder;
 use tokio::sync::mpsc;
 
 fn main() -> eyre::Result<()> {
-    let model = load_model_tract();
+    let model = Arc::new(Mutex::new(load_model_gpu()));
     let class_labels = get_imagenet_labels();
 
     let model = &model;
@@ -26,9 +27,9 @@ fn main() -> eyre::Result<()> {
     // The runtime is created before spawning the thread
     // to more cleanly forward errors if the `unwrap()`
     // panics.
-    let pool = rayon::ThreadPoolBuilder::new()
+    rayon::ThreadPoolBuilder::new()
         .num_threads(5)
-        .build()
+        .build_global()
         .unwrap();
     let rt = Builder::new_current_thread()
         .enable_all()
@@ -49,6 +50,7 @@ fn main() -> eyre::Result<()> {
             let string_context = String::from_utf8_lossy(&input.data);
             let context = deserialize_context(&string_context);
             tx_context.send(context).await.unwrap();
+
             for call_id in 0..100 {
                 let input = match inputs.next().await {
                     Some(input) => input,
@@ -66,24 +68,26 @@ fn main() -> eyre::Result<()> {
         });
     });
     let context = rx_context.blocking_recv().unwrap();
-
-    pool.scope(|s| {
-        for call_id in 0..100 {
-            let data = rx.blocking_recv().unwrap();
-            let _span = tracer.start_with_context(format!("tokio.rayon.{call_id}"), &context);
-            s.spawn(|_| {
-                let _context = Context::current_with_span(_span);
-                let tracer = global::tracer("name");
-                let __span = tracer.start_with_context("tokio-spawn", &_context);
-                // run the model on the input
-                let image = preprocess(data);
-                //let input_tensor_values = vec![image];
-                let results = run(model, image);
-                // find and display the max value with its index
-                let best_result = postprocess(results, class_labels);
-            });
-        }
-    });
-
+    let rx = Arc::new(Mutex::new(rx));
+    (0..100)
+        .into_par_iter()
+        .map(|call_id: i32| {
+            let data = rx.lock().unwrap().blocking_recv().unwrap();
+            let data = &data;
+            rayon::scope(|t| {
+                let _span = tracer.start_with_context(format!("tokio.rayon.{call_id}"), &context);
+                t.spawn(|_| {
+                    let _context = Context::current_with_span(_span);
+                    let tracer = global::tracer("name");
+                    let __span = tracer.start_with_context("tokio-spawn", &_context);
+                    // run the model on the input
+                    let image = preprocess_gpu(&data);
+                    let results = run_gpu(model.clone(), image);
+                    // find and display the max value with its index
+                    // let best_result = postprocess(results, class_labels);
+                });
+            })
+        })
+        .collect::<Vec<_>>();
     Ok(())
 }

@@ -54,7 +54,7 @@ async fn main() -> eyre::Result<()> {
             let tracer = global::tracer("name");
             let __span = tracer.start_with_context("tokio-spawn", &_context);
             // run the model on the input
-            let image = preprocess(input.data);
+            let image = preprocess(&input.data);
             //let input_tensor_values = vec![image];
             let results = run(&model, image);
             // find and display the max value with its index

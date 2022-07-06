@@ -41,6 +41,7 @@ async fn main() -> eyre::Result<()> {
 
     node.send_output(&image_output, string_context.as_bytes())
         .await?;
+
     for _ in 0..100 {
         //interval.tick().await;
         node.send_output(&image_output, bytes).await?;

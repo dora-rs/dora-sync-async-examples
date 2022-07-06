@@ -25,7 +25,8 @@ nodes:
 
   - id: tokio_spawn_blocking
     custom:
-      run: flamegraph -o tokio_spawn.svg -- ./target/release/tokio_spawn_blocking
+      run: ./target/release/tokio_spawn_blocking
+      # run: flamegraph -o tokio_spawn_blocking.svg -- ./target/release/tokio_spawn_blocking
       inputs:
         image: sender/image
       outputs:
