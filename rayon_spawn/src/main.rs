@@ -3,25 +3,17 @@ use dora_node_api::{self, config::DataId, DoraNode};
 use common::*;
 use dora_tracing::{deserialize_context, init_tracing};
 use futures::StreamExt;
-use image::{ImageBuffer, Rgb};
 use opentelemetry::{
     global,
     trace::{TraceContextExt, Tracer},
     Context,
 };
-use pollster::FutureExt as _;
 use std::sync::Arc;
-use std::{
-    fs,
-    io::{BufRead, BufReader},
-    path::Path,
-};
 
 #[tokio::main(worker_threads = 1)]
 async fn main() -> eyre::Result<()> {
     let model = Arc::new(load_model_tract());
     let mut handles = Vec::with_capacity(40);
-    let class_labels = Arc::new(get_imagenet_labels());
     let pool = rayon::ThreadPoolBuilder::new()
         .num_threads(5)
         .build()
@@ -44,9 +36,7 @@ async fn main() -> eyre::Result<()> {
                 continue;
             }
         };
-        let call_id = call_id.clone();
         let model = model.clone();
-        let class_labels = class_labels.clone();
 
         let (send, recv) = tokio::sync::oneshot::channel();
         pool.spawn(move || {
@@ -56,10 +46,9 @@ async fn main() -> eyre::Result<()> {
             // run the model on the input
             let image = preprocess(&input.data);
             //let input_tensor_values = vec![image];
-            let results = run(&model, image);
+            let result = run(&model, image);
             // find and display the max value with its index
-            let best_result = postprocess(results, &class_labels);
-            send.send(best_result).unwrap();
+            send.send(result).unwrap();
         });
         handles.push(recv);
     }

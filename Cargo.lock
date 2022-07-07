@@ -2940,20 +2940,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tokio_spawn"
-version = "0.1.0"
-dependencies = [
- "common",
- "dora-node-api",
- "dora-tracing",
- "eyre",
- "futures",
- "image",
- "opentelemetry",
- "tokio",
-]
-
-[[package]]
 name = "tokio_spawn_blocking"
 version = "0.1.0"
 dependencies = [

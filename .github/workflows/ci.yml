@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: "Test"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Cap'n Proto
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          sudo apt-get install -y capnproto libcapnp-dev
+      - name: "Check"
+        run: cargo check --all
+      - name: "Build"
+        run: cargo build --all
+      - name: "Test"
+        run: cargo test --all
+
+  clippy:
+    name: "Clippy"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Cap'n Proto
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          sudo apt-get install -y capnproto libcapnp-dev
+      - name: "Clippy"
+        run: cargo clippy --all
+
+  rustfmt:
+    name: "Formatting"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: "rustfmt"
+        run: cargo fmt --all -- --check
+
+  check-license:
+    name: "License Checks"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: cargo install cargo-lichking
+      - name: "Check dependency licenses"
+        run: cargo lichking check
