@@ -450,7 +450,7 @@ checksum = "3d7b894f5411737b7867f4827955924d7c254fc9f4d91a6aad6b097804b1018b"
 name = "common"
 version = "0.1.0"
 dependencies = [
- "dora-tracing 0.1.0 (git+https://github.com/dora-rs/dora)",
+ "dora-tracing",
  "eyre",
  "futures",
  "image",
@@ -674,25 +674,6 @@ checksum = "fea41bba32d969b513997752735605054bc0dfa92b4c56bf1189f2e174be7a10"
 [[package]]
 name = "dora-node-api"
 version = "0.1.0"
-dependencies = [
- "async-trait",
- "eyre",
- "futures",
- "futures-concurrency",
- "futures-time",
- "serde",
- "serde_yaml",
- "thiserror",
- "tokio-stream",
- "tracing",
- "uuid",
- "zenoh",
- "zenoh-config",
-]
-
-[[package]]
-name = "dora-node-api"
-version = "0.1.0"
 source = "git+https://github.com/dora-rs/dora#cd4089b89530403eceb73e61f7ff7b9abd87cb9d"
 dependencies = [
  "async-trait",
@@ -708,15 +689,6 @@ dependencies = [
  "uuid",
  "zenoh",
  "zenoh-config",
-]
-
-[[package]]
-name = "dora-tracing"
-version = "0.1.0"
-dependencies = [
- "opentelemetry",
- "opentelemetry-jaeger",
- "tokio",
 ]
 
 [[package]]
@@ -2295,8 +2267,8 @@ name = "rayon_spawn"
 version = "0.1.0"
 dependencies = [
  "common",
- "dora-node-api 0.1.0 (git+https://github.com/dora-rs/dora)",
- "dora-tracing 0.1.0 (git+https://github.com/dora-rs/dora)",
+ "dora-node-api",
+ "dora-tracing",
  "eyre",
  "futures",
  "image",
@@ -2560,8 +2532,8 @@ checksum = "3d92beeab217753479be2f74e54187a6aed4c125ff0703a866c3147a02f0c6dd"
 name = "sender"
 version = "0.1.0"
 dependencies = [
- "dora-node-api 0.1.0 (git+https://github.com/dora-rs/dora)",
- "dora-tracing 0.1.0 (git+https://github.com/dora-rs/dora)",
+ "dora-node-api",
+ "dora-tracing",
  "eyre",
  "futures",
  "image",
@@ -2957,8 +2929,8 @@ name = "tokio_rayon"
 version = "0.1.0"
 dependencies = [
  "common",
- "dora-node-api 0.1.0 (git+https://github.com/dora-rs/dora)",
- "dora-tracing 0.1.0 (git+https://github.com/dora-rs/dora)",
+ "dora-node-api",
+ "dora-tracing",
  "eyre",
  "futures",
  "image",
@@ -2974,8 +2946,8 @@ name = "tokio_spawn_blocking"
 version = "0.1.0"
 dependencies = [
  "common",
- "dora-node-api 0.1.0",
- "dora-tracing 0.1.0",
+ "dora-node-api",
+ "dora-tracing",
  "eyre",
  "futures",
  "image",
