@@ -7,11 +7,11 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "1.17.0", features = ["full"] }
-dora-node-api = { path = "../../dora/api/rust/node" }
+dora-node-api = { git = "https://github.com/dora-rs/dora" }
 eyre = "0.6.7"
 image = "0.24"
 futures = "0.3.21"
-dora-tracing = { path = "../../dora/tracing" }
+dora-tracing = { git = "https://github.com/dora-rs/dora" }
 opentelemetry = { version = "0.17", features = ["rt-tokio", "metrics"] }
 rayon = "1.5.3"
 pollster = "0.2.5"
