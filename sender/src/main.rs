@@ -28,9 +28,7 @@ async fn main() -> eyre::Result<()> {
 
     let node = DoraNode::init_from_env().await?;
 
-    let wait_duration = Duration::from_secs(wait_interval);
-
-    let mut interval = tokio::time::interval(wait_duration);
+    let mut interval = tokio::time::interval(Duration::from_secs(wait_interval));
     let mut interval_context = tokio::time::interval(Duration::from_secs(1));
 
     let img_path = lazy_download(&image_url)?;
@@ -46,10 +44,11 @@ async fn main() -> eyre::Result<()> {
 
     let mut stream = node.inputs().await?;
 
+    let node_mount_duration = Duration::from_secs(20);
     // make sure that every node is mounted before sending data.
     println!("Waiting for node to be mounted..");
     for _ in 0..node.node_config().inputs.len() {
-        let input = timeout(wait_duration, stream.next()).await;
+        let input = timeout(node_mount_duration, stream.next()).await;
         match input {
             Err(_err) => {
                 println!("Missed a node mounted signal")

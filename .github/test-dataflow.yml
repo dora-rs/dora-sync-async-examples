@@ -7,9 +7,9 @@ nodes:
     custom:
       run: cargo run --bin sender --release
       env:
-        CONCURRENCIES: 10
+        CONCURRENCIES: 1
         ITERATIONS: 2
-        WAIT_ITERATIONS_IN_SECS: 2
+        WAIT_ITERATIONS_IN_SECS: 10
       outputs:
         - image
         - context
@@ -25,16 +25,16 @@ nodes:
       outputs:
         - mounted
       env:
-        RAYON_NUM_THREADS: 5
-        NUMBER_OF_CALLS: 22
+        RAYON_NUM_THREADS: 1
+        NUMBER_OF_CALLS: 4
   - id: tokio_spawn_blocking
     custom:
       run: cargo run --bin tokio_spawn_blocking --release
       # run: flamegraph -o tokio_spawn_blocking.svg -- ./target/release/tokio_spawn_blocking
       env:
-        TOKIO_BLOCKING_THREADS: 50
+        TOKIO_BLOCKING_THREADS: 1
         TOKIO_WORKER_THREADS: 1
-        NUMBER_OF_CALLS: 22
+        NUMBER_OF_CALLS: 4
       inputs:
         image: sender/image
         context: sender/context

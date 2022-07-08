@@ -21,6 +21,7 @@ jobs:
       - name: "Test Setup"
         run: |
           .github/setup.sh
+          ./bin/dora-coordinator run .github/test-dataflow.yml
 
   clippy:
     name: "Clippy"

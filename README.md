@@ -18,7 +18,10 @@ cp ../dora/target/release/dora-coordinator ./bin/dora-coordinator
 
 # Setup a Jaeger suite to collect metrics and traces
 docker run -d -p6831:6831/udp -p6832:6832/udp -p16686:16686 jaegertracing/all-in-one:latest
+```
 
+- To run the dataflow you can then run:
+```
 # The running command
 ./bin/dora-coordinator run ./dataflow.yml
 ```
