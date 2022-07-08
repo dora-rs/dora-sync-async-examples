@@ -9,24 +9,27 @@ use opentelemetry::{
     trace::{TraceContextExt, Tracer},
     Context,
 };
+use std::path::PathBuf;
 use std::sync::Arc;
 #[cfg(feature = "gpu")]
 use std::sync::Mutex;
 use std::{
     fs,
-    io::{BufRead, BufReader},
+    io::{copy, BufRead, BufReader, BufWriter},
     path::Path,
 };
 use tract_onnx::{prelude::Tensor, prelude::*, tract_hir::internal::tract_smallvec::SmallVec};
 
-static MODEL_PATH: &str = "./data/efficientnet-lite4-11.onnx";
+static MODEL_URL: &str = "https://github.com/onnx/models/raw/main/vision/classification/efficientnet-lite4/model/efficientnet-lite4-11.onnx";
+static LABELS_URL: &str = "https://raw.githubusercontent.com/onnx/models/main/vision/classification/efficientnet-lite4/dependencies/labels_map.txt";
 
 type TractModel = SimplePlan<TypedFact, Box<dyn TypedOp>, Graph<TypedFact, Box<dyn TypedOp>>>;
 
 // Modify this function in order to load another model
 pub fn load_model_tract() -> TractModel {
+    let model_path = lazy_download(MODEL_URL).unwrap();
     tract_onnx::onnx()
-        .model_for_path(MODEL_PATH)
+        .model_for_path(model_path)
         .unwrap()
         .into_optimized()
         .unwrap()
@@ -45,9 +48,7 @@ pub fn run(model: &TractModel, data: &[u8], span: Span) -> (f32, i32) {
 
 pub fn get_imagenet_labels() -> Vec<String> {
     // Download the ImageNet class labels, matching your model
-    let labels_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../data")
-        .join("labels_map.txt");
+    let labels_path = lazy_download(LABELS_URL).unwrap();
     let file = BufReader::new(fs::File::open(labels_path).unwrap());
 
     file.lines().map(|line| line.unwrap()).collect()
@@ -148,4 +149,34 @@ pub fn load_model_gpu() -> Session {
         > = session.run(vec![image]).unwrap();
     }
     session
+}
+
+pub fn lazy_download(url: &str) -> eyre::Result<PathBuf> {
+    // Download the ImageNet class labels, matching SqueezeNet's classes.
+    let target = url.split("/").last().expect("Url does not have slashes.");
+    let target_path = Path::new("./data").join(target);
+    if !target_path.exists() {
+        println!("Downloading {:?} to {:?}...", url, target_path);
+        let resp = ureq::get(url).call().map_err(Box::new)?;
+
+        assert!(resp.has("Content-Length"));
+        let len = resp
+            .header("Content-Length")
+            .and_then(|s| s.parse::<usize>().ok())
+            .unwrap();
+        println!("Downloading {} bytes...", len);
+
+        let mut reader = resp.into_reader();
+
+        let f = fs::File::create(&target_path).unwrap();
+        let mut writer = BufWriter::new(f);
+
+        let bytes_io_count = copy(&mut reader, &mut writer).unwrap();
+
+        assert_eq!(bytes_io_count, len as u64);
+    } else {
+        println!("Reusing {target} in data folder");
+    }
+
+    Ok(target_path)
 }

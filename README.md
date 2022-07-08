@@ -6,21 +6,14 @@ This is a testing repository of dora nodes that implements several cpu sync and 
 ```bash
 # Download the data
 mkdir data
-cd data
-wget https://i.imgur.com/M23TqZr.jpeg
-mv M23TqZr.jpeg image.jpg
-wget https://github.com/onnx/models/raw/main/vision/classification/efficientnet-lite4/model/efficientnet-lite4-11.onnx
-wget https://raw.githubusercontent.com/onnx/models/main/vision/classification/efficientnet-lite4/dependencies/labels_map.txt
-wget https://github.com/onnx/models/raw/main/vision/classification/squeezenet/model/squeezenet1.1-7.onnx 
+mkdir bin
 # Clone dora in parent folder if it is not already there
-cd ../
 cd ../
 git clone https://github.com/dora-rs/dora.git
 # Get an executable coordinator from `dora`
 cd ./dora
 cargo build  --manifest-path coordinator/Cargo.toml --release
 cd ../dora-sync-async-examples
-mkdir bin
 cp ../dora/target/release/dora-coordinator ./bin/dora-coordinator
 
 # Setup a Jaeger suite to collect metrics and traces

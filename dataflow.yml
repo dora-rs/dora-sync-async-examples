@@ -8,8 +8,8 @@ nodes:
       run: cargo run --bin sender --release
       env:
         CONCURRENCIES: 10
-        ITERATIONS: 10
-        WAIT_ITERATIONS_IN_SECS: 10
+        ITERATIONS: 2
+        WAIT_ITERATIONS_IN_SECS: 2
       outputs:
         - image
         - context
@@ -26,6 +26,7 @@ nodes:
         - ready
       env:
         RAYON_NUM_THREADS: 5
+        NUMBER_OF_CALLS: 20
   - id: tokio_spawn_blocking
     custom:
       run: cargo run --bin tokio_spawn_blocking --release
@@ -33,6 +34,7 @@ nodes:
       env:
         TOKIO_BLOCKING_THREADS: 50
         TOKIO_WORKER_THREADS: 1
+        NUMBER_OF_CALLS: 20
       inputs:
         image: sender/image
         context: sender/context

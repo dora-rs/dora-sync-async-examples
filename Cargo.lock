@@ -459,6 +459,7 @@ dependencies = [
  "pollster",
  "rayon",
  "tract-onnx",
+ "ureq",
 ]
 
 [[package]]
@@ -2532,6 +2533,7 @@ checksum = "3d92beeab217753479be2f74e54187a6aed4c125ff0703a866c3147a02f0c6dd"
 name = "sender"
 version = "0.1.0"
 dependencies = [
+ "common",
  "dora-node-api",
  "dora-tracing",
  "eyre",
