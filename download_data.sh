@@ -1,4 +1,4 @@
-cd data
+mkdir data && cd data
 wget https://i.imgur.com/M23TqZr.jpeg
 mv M23TqZr.jpeg image2.jpg
 wget https://github.com/onnx/models/raw/main/vision/classification/efficientnet-lite4/model/efficientnet-lite4-11.onnx

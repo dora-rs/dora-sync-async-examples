@@ -13,6 +13,7 @@ git clone https://github.com/dora-rs/dora.git
 cd ./dora
 cargo build  --manifest-path coordinator/Cargo.toml --release
 cd ../dora-sync-async-examples
+mkdir bin
 cp ../dora/target/release/dora-coordinator ./bin/dora-coordinator
 
 # Setup a Jaeger suite to collect metrics
