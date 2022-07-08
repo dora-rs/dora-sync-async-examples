@@ -9,12 +9,8 @@ nodes:
       outputs:
         - image
       inputs:
-   #     ready_0: tokio_spawn/ready
-        ready_1: tokio_spawn_blocking/ready
-    #    ready_2: rayon_spawn/ready
-        ready_3: rayon_spawn/ready
-
-
+        ready_0: tokio_spawn_blocking/ready
+        ready_1: rayon_spawn/ready
   - id: rayon_spawn
     custom:
       run: cargo run --bin rayon_spawn --release
@@ -22,7 +18,9 @@ nodes:
         image: sender/image
       outputs:
         - ready
-
+   # After https://github.com/dora-rs/dora/pull/44, the rayon thread will be configurable from the YAML
+   #   env:
+   #     RAYON_NUM_THREADS: 1
   - id: tokio_spawn_blocking
     custom:
       run: cargo run --bin tokio_spawn_blocking --release
@@ -31,20 +29,3 @@ nodes:
         image: sender/image
       outputs:
         - ready
-
-
-  # - id: tokio_spawn_blocking
-    # custom:
-      # run: ./target/release/tokio_spawn_blocking
-      # inputs:
-        # image: sender/image
-      # outputs:
-        # - ready
-  
-  # - id: rayon_spawn
-    # custom:
-      # run: ./target/release/rayon_spawn
-      # inputs:
-        # image: sender/image
-      # outputs:
-        # - ready

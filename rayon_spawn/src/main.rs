@@ -3,11 +3,7 @@ use dora_node_api::{self, config::DataId, DoraNode};
 use common::*;
 use dora_tracing::{deserialize_context, init_tracing};
 use futures::StreamExt;
-use opentelemetry::{
-    global,
-    trace::{TraceContextExt, Tracer},
-    Context,
-};
+use opentelemetry::trace::Tracer;
 use std::sync::Arc;
 
 #[tokio::main(worker_threads = 1)]
@@ -35,19 +31,12 @@ async fn main() -> eyre::Result<()> {
                 continue;
             }
         };
-        let _span = tracer.start_with_context(format!("in_async_thread"), &context);
+        let span = tracer.start_with_context(format!("in_async_thread"), &context);
         let model = model.clone();
 
         let (send, recv) = tokio::sync::oneshot::channel();
         pool.spawn_fifo(move || {
-            let _context = Context::current_with_span(_span);
-            let tracer = global::tracer("name");
-            let __span = tracer.start_with_context("in_sync_thread", &_context);
-            // run the model on the input
-            let image = preprocess(&input.data);
-            //let input_tensor_values = vec![image];
-            let result = run(&model, image);
-            // find and display the max value with its index
+            let result = run(&model, &input.data, span);
             send.send(result).unwrap();
         });
         handles.push(recv);

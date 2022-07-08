@@ -3,6 +3,12 @@ use image::{ImageBuffer, Rgb};
 use onnxruntime::ndarray::ArrayBase;
 #[cfg(feature = "gpu")]
 use onnxruntime::{environment::Environment, session::Session};
+use opentelemetry::sdk::trace::Span;
+use opentelemetry::{
+    global,
+    trace::{TraceContextExt, Tracer},
+    Context,
+};
 use std::sync::Arc;
 #[cfg(feature = "gpu")]
 use std::sync::Mutex;
@@ -61,7 +67,11 @@ pub fn postprocess(results: SmallVec<[Arc<Tensor>; 4]>) -> (f32, i32) {
     best
 }
 
-pub fn run(model: &TractModel, image: Tensor) -> (f32, i32) {
+pub fn run(model: &TractModel, data: &[u8], span: Span) -> (f32, i32) {
+    let context = Context::current_with_span(span);
+    let tracer = global::tracer("name");
+    let _span = tracer.start_with_context("in_sync_thread", &context);
+    let image = preprocess(data);
     postprocess(model.run(tvec!(image)).unwrap())
 }
 

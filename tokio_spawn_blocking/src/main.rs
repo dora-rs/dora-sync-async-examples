@@ -3,11 +3,7 @@ use dora_node_api::{self, config::DataId, DoraNode};
 use dora_tracing::{deserialize_context, init_tracing};
 use eyre::Context;
 use futures::StreamExt;
-use opentelemetry::{
-    global,
-    trace::{TraceContextExt, Tracer},
-    Context as OTelContext,
-};
+use opentelemetry::trace::Tracer;
 use std::sync::Arc;
 use tokio::runtime::Builder;
 
@@ -41,18 +37,11 @@ fn main() -> eyre::Result<()> {
                     continue;
                 }
             };
-            let _span = tracer.start_with_context(format!("in_async_thread"), &context);
+            let span = tracer.start_with_context(format!("in_async_thread"), &context);
             let model = model.clone();
 
             tokio::task::spawn_blocking(move || {
-                let _context = OTelContext::current_with_span(_span);
-                let tracer = global::tracer("name");
-                let __span = tracer.start_with_context("in_sync_thread", &_context);
-                // run the model on the input
-                let image = preprocess(&input.data);
-                //let input_tensor_values = vec![image];
-                let _result = run(&model, image);
-                // find and display the max value with its index
+                let _result = run(&model, &input.data, span);
             });
         }
         Ok::<_, eyre::ErrReport>(())

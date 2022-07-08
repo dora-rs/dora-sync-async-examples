@@ -29,10 +29,11 @@ async fn main() -> eyre::Result<()> {
     let bytes = img.as_bytes();
 
     let mut stream = node.inputs().await?;
+
     // make sure that every node is ready before sending data.
-    let _input = stream.next().await.unwrap();
-    let _input = stream.next().await.unwrap();
-    // let _input = stream.next().await.unwrap();
+    for _ in 0..node.node_config().inputs.len() {
+        let _input = stream.next().await.unwrap();
+    }
 
     let tracer = init_tracing("sender").unwrap();
     let span = tracer.start("root-sender");
