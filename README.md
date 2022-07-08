@@ -5,7 +5,13 @@ This is a testing repository of dora nodes that implements several cpu sync and 
 
 ```bash
 # Download the data
-./download_data.sh
+mkdir data
+cd data
+wget https://i.imgur.com/M23TqZr.jpeg
+mv M23TqZr.jpeg image.jpg
+wget https://github.com/onnx/models/raw/main/vision/classification/efficientnet-lite4/model/efficientnet-lite4-11.onnx
+wget https://raw.githubusercontent.com/onnx/models/main/vision/classification/efficientnet-lite4/dependencies/labels_map.txt
+wget https://github.com/onnx/models/raw/main/vision/classification/squeezenet/model/squeezenet1.1-7.onnx 
 # Clone dora in parent folder if it is not already there
 cd ../
 git clone https://github.com/dora-rs/dora.git
@@ -20,7 +26,7 @@ cp ../dora/target/release/dora-coordinator ./bin/dora-coordinator
 docker run -d -p6831:6831/udp -p6832:6832/udp -p16686:16686 jaegertracing/all-in-one:latest
 
 # The running command
-cargo build --all --release && ./bin/dora-coordinator run dataflow.yml
+./bin/dora-coordinator run dataflow.yml
 ```
 
 ## Modifying the workload to test
@@ -43,7 +49,7 @@ df = pd.DataFrame(df.data[0]["spans"])
 ```
 
 You will have to install the following dependency to run the python script
-```bash
+```
 pip install jupyterthemes
 python histogram.py
 ```
@@ -57,7 +63,7 @@ You can also check the Jaeger UI: http://localhost:16686
 
 Fixing `onnxruntime-rs` shared library issues requires that you link the downloaded `onnxruntime` shared library in your target build folder:
 
-```bash
+```
 export ORT_USE_CUDA=1
 export LD_LIBRARY_PATH="PATH TO DORA_CPU_BOUND..."/cpu-bound-async/target/release/build/onnxruntime-sys-186188f4edb1a21e/out/onnxruntime/onnxruntime-linux-x64-gpu-1.8.0/lib:${LD_LIBRARY_PATH}
 ```

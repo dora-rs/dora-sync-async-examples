@@ -28,7 +28,7 @@ async fn main() -> eyre::Result<()> {
 
     let mut interval = tokio::time::interval(Duration::from_secs(wait_interval));
 
-    let img = image::open(&Path::new("./data/image2.jpg"))?;
+    let img = image::open(&Path::new("./data/image.jpg"))?;
     let img = img.as_rgb8().unwrap();
 
     // let img_width = img.dimensions().0;
