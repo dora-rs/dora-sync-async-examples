@@ -16,6 +16,9 @@ fn main() -> eyre::Result<()> {
     let worker_threads = var("TOKIO_WORKER_THREADS")
         .unwrap_or("1".to_string())
         .parse::<usize>()?;
+    let number_of_calls = var("NUMBER_OF_CALLS")
+        .unwrap_or("100".to_string())
+        .parse::<usize>()?;
     // let model = Arc::new(Mutex::new(load_model_gpu()));
     let model = Arc::new(load_model_tract());
     let context = RwLock::new(OtelContext::new());
@@ -33,10 +36,10 @@ fn main() -> eyre::Result<()> {
             .wrap_err("Fail to load dora node")?;
 
         let mut inputs = node.inputs().await?;
-        node.send_output(&DataId::from("ready".to_owned()), b"")
+        node.send_output(&DataId::from("mounted".to_owned()), b"")
             .await?;
         let tracer = init_tracing("tokio.spawn.blocking")?;
-        for _ in 0..100 {
+        for _ in 0..number_of_calls {
             let input = match inputs.next().await {
                 Some(input) => input,
                 None => {

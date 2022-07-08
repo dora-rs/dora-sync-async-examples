@@ -14,8 +14,8 @@ nodes:
         - image
         - context
       inputs:
-        ready_0: tokio_spawn_blocking/ready
-        ready_1: rayon_spawn/ready
+        mounted_0: tokio_spawn_blocking/mounted
+        mounted_1: rayon_spawn/mounted
   - id: rayon_spawn
     custom:
       run: cargo run --bin rayon_spawn --release
@@ -23,7 +23,7 @@ nodes:
         image: sender/image
         context: sender/context
       outputs:
-        - ready
+        - mounted
       env:
         RAYON_NUM_THREADS: 5
         NUMBER_OF_CALLS: 20
@@ -39,4 +39,4 @@ nodes:
         image: sender/image
         context: sender/context
       outputs:
-        - ready
+        - mounted

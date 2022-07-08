@@ -7,7 +7,7 @@ This is a testing repository of dora nodes that implements several cpu sync and 
 # Download the data
 mkdir data
 mkdir bin
-# Clone dora in parent folder if it is not already there
+# Clone dora in parent folder if it is not almounted there
 cd ../
 git clone https://github.com/dora-rs/dora.git
 # Get an executable coordinator from `dora`

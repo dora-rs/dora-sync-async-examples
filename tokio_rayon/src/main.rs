@@ -33,7 +33,7 @@ fn main() -> eyre::Result<()> {
         rt.block_on(async move {
             let node = DoraNode::init_from_env().await.unwrap();
             let mut inputs = node.inputs().await.unwrap();
-            node.send_output(&DataId::from("ready".to_owned()), b"")
+            node.send_output(&DataId::from("mounted".to_owned()), b"")
                 .await
                 .unwrap();
             let input = inputs.next().await.unwrap();

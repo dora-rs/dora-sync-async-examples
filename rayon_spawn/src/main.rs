@@ -5,10 +5,14 @@ use dora_tracing::{deserialize_context, init_tracing};
 use futures::StreamExt;
 use opentelemetry::trace::Tracer;
 use opentelemetry::Context as OtelContext;
+use std::env::var;
 use std::sync::{Arc, RwLock};
 
 #[tokio::main(worker_threads = 1)]
 async fn main() -> eyre::Result<()> {
+    let number_of_calls = var("NUMBER_OF_CALLS")
+        .unwrap_or("100".to_string())
+        .parse::<usize>()?;
     let context = RwLock::new(OtelContext::new());
     let model = Arc::new(load_model_tract());
     let mut handles = Vec::with_capacity(40);
@@ -19,10 +23,10 @@ async fn main() -> eyre::Result<()> {
     let node = DoraNode::init_from_env().await?;
 
     let mut inputs = node.inputs().await?;
-    node.send_output(&DataId::from("ready".to_owned()), b"")
+    node.send_output(&DataId::from("mounted".to_owned()), b"")
         .await?;
     let tracer = init_tracing("rayon.spawn").unwrap();
-    for _ in 0..100 {
+    for _ in 0..number_of_calls {
         let input = match inputs.next().await {
             Some(input) => input,
             None => {

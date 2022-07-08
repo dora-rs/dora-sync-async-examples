@@ -5,6 +5,7 @@ use dora_tracing::serialize_context;
 use futures::StreamExt;
 use image::EncodableLayout;
 use std::time::Duration;
+use tokio::time::timeout;
 
 use opentelemetry::{
     trace::{TraceContextExt, Tracer},
@@ -27,7 +28,9 @@ async fn main() -> eyre::Result<()> {
 
     let node = DoraNode::init_from_env().await?;
 
-    let mut interval = tokio::time::interval(Duration::from_secs(wait_interval));
+    let wait_duration = Duration::from_secs(wait_interval);
+
+    let mut interval = tokio::time::interval(wait_duration);
     let mut interval_context = tokio::time::interval(Duration::from_secs(1));
 
     let img_path = lazy_download(&image_url)?;
@@ -43,10 +46,16 @@ async fn main() -> eyre::Result<()> {
 
     let mut stream = node.inputs().await?;
 
-    // make sure that every node is ready before sending data.
+    // make sure that every node is mounted before sending data.
     println!("Waiting for node to be mounted..");
     for _ in 0..node.node_config().inputs.len() {
-        let _input = stream.next().await.unwrap();
+        let input = timeout(wait_duration, stream.next()).await;
+        match input {
+            Err(_err) => {
+                println!("Missed a node mounted signal")
+            }
+            _ => {}
+        };
     }
     println!("Node are mounted. Sending data...");
 
