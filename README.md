@@ -14,6 +14,7 @@ wget https://raw.githubusercontent.com/onnx/models/main/vision/classification/ef
 wget https://github.com/onnx/models/raw/main/vision/classification/squeezenet/model/squeezenet1.1-7.onnx 
 # Clone dora in parent folder if it is not already there
 cd ../
+cd ../
 git clone https://github.com/dora-rs/dora.git
 # Get an executable coordinator from `dora`
 cd ./dora
@@ -26,7 +27,7 @@ cp ../dora/target/release/dora-coordinator ./bin/dora-coordinator
 docker run -d -p6831:6831/udp -p6832:6832/udp -p16686:16686 jaegertracing/all-in-one:latest
 
 # The running command
-./bin/dora-coordinator run dataflow.yml
+./bin/dora-coordinator run ./dataflow.yml
 ```
 
 ## Modifying the workload to test
