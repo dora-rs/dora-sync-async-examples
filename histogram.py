@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # import jtplot submodule from jupyterthemes
+# Installable via: pip install jupyterthemes
 from jupyterthemes import jtplot
 
 # currently installed theme will be used to

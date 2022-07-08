@@ -23,7 +23,15 @@ docker run -d -p6831:6831/udp -p6832:6832/udp -p16686:16686 jaegertracing/all-in
 cargo build --all --release && ./bin/dora-coordinator run dataflow.yml
 ```
 
-In order to fetch the metric from Jaeger, I wrote a `histogram.py` that will collect the latest data in a tabular form from Jaeger API. The script looks like this:
+## Modifying the workload to test
+
+If you go into the `common` crate, you will be able to change the `run` functions you want to benchmark. Those functions will be tested on all threadpool nodes defined in the dataflow.
+
+## Data Analysis
+
+### Python
+
+To fetch the metric from Jaeger, I wrote a `histogram.py` that will collect the latest data in a tabular form from Jaeger API. The script looks something like this:
 
 ```python
 import pandas as pd
@@ -34,9 +42,16 @@ df = pd.read_json(link)
 df = pd.DataFrame(df.data[0]["spans"])
 ```
 
-## Modifying the workload to test
+You will have to install the following dependency to run the python script
+```bash
+pip install jupyterthemes
+python histogram.py
+```
 
-If you go into the `common` crate, you will be able to change the `run` functions you want to benchmark. Those functions will be tested on all threadpool nodes defined in the dataflow.
+### UI
+
+You can also check the Jaeger UI: http://localhost:16686
+
 
 ## Issues
 
