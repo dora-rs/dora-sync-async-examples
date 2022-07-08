@@ -6,8 +6,13 @@ nodes:
   - id: sender
     custom:
       run: cargo run --bin sender --release
+      env:
+        CONCURRENCIES: 10
+        ITERATIONS: 10
+        WAIT_ITERATIONS_IN_SECS: 10
       outputs:
         - image
+        - context
       inputs:
         ready_0: tokio_spawn_blocking/ready
         ready_1: rayon_spawn/ready
@@ -16,16 +21,20 @@ nodes:
       run: cargo run --bin rayon_spawn --release
       inputs:
         image: sender/image
+        context: sender/context
       outputs:
         - ready
-   # After https://github.com/dora-rs/dora/pull/44, the rayon thread will be configurable from the YAML
-   #   env:
-   #     RAYON_NUM_THREADS: 1
+      env:
+        RAYON_NUM_THREADS: 5
   - id: tokio_spawn_blocking
     custom:
       run: cargo run --bin tokio_spawn_blocking --release
       # run: flamegraph -o tokio_spawn_blocking.svg -- ./target/release/tokio_spawn_blocking
+      env:
+        TOKIO_BLOCKING_THREADS: 50
+        TOKIO_WORKER_THREADS: 1
       inputs:
         image: sender/image
+        context: sender/context
       outputs:
         - ready

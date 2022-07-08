@@ -20,7 +20,7 @@ async fn main() -> eyre::Result<()> {
     let iterations = var("ITERATIONS")
         .unwrap_or("10".to_string())
         .parse::<u64>()?;
-    let wait_interval = var("WAIT_INTERVAL_IN_SECS")
+    let wait_interval = var("WAIT_ITERATIONS_IN_SECS")
         .unwrap_or("5".to_string())
         .parse::<u64>()?;
 

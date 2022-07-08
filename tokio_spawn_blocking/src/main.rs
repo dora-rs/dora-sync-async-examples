@@ -5,18 +5,25 @@ use eyre::Context;
 use futures::StreamExt;
 use opentelemetry::trace::Tracer;
 use opentelemetry::Context as OtelContext;
+use std::env::var;
 use std::sync::{Arc, RwLock};
 use tokio::runtime::Builder;
 
 fn main() -> eyre::Result<()> {
+    let blocking_threads = var("TOKIO_BLOCKING_THREADS")
+        .unwrap_or("50".to_string())
+        .parse::<usize>()?;
+    let worker_threads = var("TOKIO_WORKER_THREADS")
+        .unwrap_or("1".to_string())
+        .parse::<usize>()?;
     // let model = Arc::new(Mutex::new(load_model_gpu()));
     let model = Arc::new(load_model_tract());
     let context = RwLock::new(OtelContext::new());
 
     let rt = Builder::new_current_thread()
         .enable_all()
-        .worker_threads(1)
-        .max_blocking_threads(5)
+        .worker_threads(worker_threads)
+        .max_blocking_threads(blocking_threads)
         .build()
         .unwrap();
 
