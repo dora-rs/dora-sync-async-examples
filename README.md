@@ -15,12 +15,27 @@ cargo build  --manifest-path coordinator/Cargo.toml --release
 cd ../dora-sync-async-examples
 cp ../dora/target/release/dora-coordinator ./bin/dora-coordinator
 
+# Setup a Jaeger suite to collect metrics
+docker run -d -p6831:6831/udp -p6832:6832/udp -p16686:16686 jaegertracing/all-in-one:latest
+
 # The running command
 cargo build --all --release && ./bin/dora-coordinator run dataflow.yml
 ```
+
+In order to fetch the metric from Jaeger, I wrote a `histogram.py` that will collect the latest data in a tabular form from Jaeger API. The script looks like this:
+
+```python
+import pandas as pd
+
+link = "http://localhost:16686/api/traces?service=sender&lookback=6h&prettyPrint=true&limit=1"
+
+df = pd.read_json(link)
+df = pd.DataFrame(df.data[0]["spans"])
+```
+
 ## Modifying the workload to test
 
-If you go in the common crate, you will be able to change synchronous functions you want to benchmark, that will be readily available on all threadpool nodes.
+If you go into the common crate, you will be able to change sync functions you want to benchmark. Those functions will be readily available on all threadpool nodes.
 
 ## Issues
 

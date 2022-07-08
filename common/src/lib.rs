@@ -1,7 +1,11 @@
 use image::{ImageBuffer, Rgb};
+#[cfg(feature = "gpu")]
 use onnxruntime::ndarray::ArrayBase;
+#[cfg(feature = "gpu")]
 use onnxruntime::{environment::Environment, session::Session};
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+#[cfg(feature = "gpu")]
+use std::sync::Mutex;
 use std::{
     fs,
     io::{BufRead, BufReader},
@@ -9,7 +13,7 @@ use std::{
 };
 use tract_onnx::{prelude::Tensor, prelude::*, tract_hir::internal::tract_smallvec::SmallVec};
 
-static MODEL_PATH: &str = "./data/squeezenet1.1-7.onnx";
+static MODEL_PATH: &str = "./data/efficientnet-lite4-11.onnx";
 
 type TractModel = SimplePlan<TypedFact, Box<dyn TypedOp>, Graph<TypedFact, Box<dyn TypedOp>>>;
 pub fn load_model_tract() -> TractModel {
@@ -61,6 +65,7 @@ pub fn run(model: &TractModel, image: Tensor) -> (f32, i32) {
     postprocess(model.run(tvec!(image)).unwrap())
 }
 
+#[cfg(feature = "gpu")]
 pub fn preprocess_gpu(
     data: &[u8],
 ) -> ArrayBase<onnxruntime::ndarray::OwnedRepr<f32>, onnxruntime::ndarray::Dim<[usize; 4]>> {
@@ -75,6 +80,7 @@ pub fn preprocess_gpu(
     })
 }
 
+#[cfg(feature = "gpu")]
 pub fn postprocess_gpu(
     results: Vec<
         onnxruntime::tensor::OrtOwnedTensor<
@@ -94,6 +100,7 @@ pub fn postprocess_gpu(
     best
 }
 
+#[cfg(feature = "gpu")]
 pub fn run_gpu(
     model: Arc<Mutex<Session>>,
     image: ArrayBase<onnxruntime::ndarray::OwnedRepr<f32>, onnxruntime::ndarray::Dim<[usize; 4]>>,
@@ -103,6 +110,7 @@ pub fn run_gpu(
     postprocess_gpu(result)
 }
 
+#[cfg(feature = "gpu")]
 pub fn load_model_gpu() -> Session {
     let environment = Environment::builder()
         .with_name("integration_test")

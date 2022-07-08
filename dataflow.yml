@@ -12,12 +12,12 @@ nodes:
    #     ready_0: tokio_spawn/ready
         ready_1: tokio_spawn_blocking/ready
     #    ready_2: rayon_spawn/ready
-        ready_3: tokio_rayon/ready
+        ready_3: rayon_spawn/ready
 
 
-  - id: tokio_rayon
+  - id: rayon_spawn
     custom:
-      run: ./target/release/tokio_rayon
+      run: ./target/release/rayon_spawn
       inputs:
         image: sender/image
       outputs:
