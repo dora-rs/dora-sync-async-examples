@@ -16,7 +16,7 @@ cd ../dora-sync-async-examples
 mkdir bin
 cp ../dora/target/release/dora-coordinator ./bin/dora-coordinator
 
-# Setup a Jaeger suite to collect metrics
+# Setup a Jaeger suite to collect metrics and traces
 docker run -d -p6831:6831/udp -p6832:6832/udp -p16686:16686 jaegertracing/all-in-one:latest
 
 # The running command
@@ -36,7 +36,7 @@ df = pd.DataFrame(df.data[0]["spans"])
 
 ## Modifying the workload to test
 
-If you go into the common crate, you will be able to change sync functions you want to benchmark. Those functions will be readily available on all threadpool nodes.
+If you go into the `common` crate, you will be able to change the `run` functions you want to benchmark. Those functions will be tested on all threadpool nodes defined in the dataflow.
 
 ## Issues
 

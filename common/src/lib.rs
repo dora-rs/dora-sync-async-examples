@@ -22,6 +22,8 @@ use tract_onnx::{prelude::Tensor, prelude::*, tract_hir::internal::tract_smallve
 static MODEL_PATH: &str = "./data/efficientnet-lite4-11.onnx";
 
 type TractModel = SimplePlan<TypedFact, Box<dyn TypedOp>, Graph<TypedFact, Box<dyn TypedOp>>>;
+
+// Modify this function in order to load another model
 pub fn load_model_tract() -> TractModel {
     tract_onnx::onnx()
         .model_for_path(MODEL_PATH)
@@ -32,8 +34,17 @@ pub fn load_model_tract() -> TractModel {
         .unwrap()
 }
 
+// Modify this function in order to test another synchronous operation
+pub fn run(model: &TractModel, data: &[u8], span: Span) -> (f32, i32) {
+    let context = Context::current_with_span(span);
+    let tracer = global::tracer("name");
+    let _span = tracer.start_with_context("in_sync_thread", &context);
+    let image = preprocess(data);
+    postprocess(model.run(tvec!(image)).unwrap())
+}
+
 pub fn get_imagenet_labels() -> Vec<String> {
-    // Download the ImageNet class labels, matching SqueezeNet's classes.
+    // Download the ImageNet class labels, matching your model
     let labels_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../data")
         .join("labels_map.txt");
@@ -42,7 +53,7 @@ pub fn get_imagenet_labels() -> Vec<String> {
     file.lines().map(|line| line.unwrap()).collect()
 }
 
-pub fn preprocess(data: &[u8]) -> Tensor {
+fn preprocess(data: &[u8]) -> Tensor {
     let image: ImageBuffer<Rgb<u8>, &[u8]> =
         image::ImageBuffer::from_raw(1600, 1065, data).unwrap();
     let resized =
@@ -55,7 +66,7 @@ pub fn preprocess(data: &[u8]) -> Tensor {
     .into()
 }
 
-pub fn postprocess(results: SmallVec<[Arc<Tensor>; 4]>) -> (f32, i32) {
+fn postprocess(results: SmallVec<[Arc<Tensor>; 4]>) -> (f32, i32) {
     let best = results[0]
         .to_array_view::<f32>()
         .unwrap()
@@ -67,16 +78,8 @@ pub fn postprocess(results: SmallVec<[Arc<Tensor>; 4]>) -> (f32, i32) {
     best
 }
 
-pub fn run(model: &TractModel, data: &[u8], span: Span) -> (f32, i32) {
-    let context = Context::current_with_span(span);
-    let tracer = global::tracer("name");
-    let _span = tracer.start_with_context("in_sync_thread", &context);
-    let image = preprocess(data);
-    postprocess(model.run(tvec!(image)).unwrap())
-}
-
 #[cfg(feature = "gpu")]
-pub fn preprocess_gpu(
+fn preprocess_gpu(
     data: &[u8],
 ) -> ArrayBase<onnxruntime::ndarray::OwnedRepr<f32>, onnxruntime::ndarray::Dim<[usize; 4]>> {
     let image: ImageBuffer<Rgb<u8>, &[u8]> =
@@ -91,7 +94,7 @@ pub fn preprocess_gpu(
 }
 
 #[cfg(feature = "gpu")]
-pub fn postprocess_gpu(
+fn postprocess_gpu(
     results: Vec<
         onnxruntime::tensor::OrtOwnedTensor<
             f32,

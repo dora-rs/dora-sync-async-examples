@@ -4,10 +4,7 @@ use common::*;
 use dora_tracing::{deserialize_context, init_tracing};
 use futures::StreamExt;
 
-use opentelemetry::{
-    trace::{TraceContextExt, Tracer},
-    Context,
-};
+use opentelemetry::trace::Tracer;
 
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use std::sync::{Arc, Mutex};
@@ -63,9 +60,7 @@ fn main() -> eyre::Result<()> {
         .map(|_: i32| {
             let data = rx.lock().unwrap().blocking_recv().unwrap();
             let _span = tracer.start_with_context(format!("in_sync_thread"), &context);
-            let _context = Context::current_with_span(_span);
-            let image = preprocess(&data);
-            let _results = run(model, image);
+            let _results = run(model, &data, _span);
         })
         .collect::<Vec<_>>();
     Ok(())
