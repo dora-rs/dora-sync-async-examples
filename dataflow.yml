@@ -5,7 +5,7 @@ communication:
 nodes:
   - id: sender
     custom:
-      run: ./target/release/sender
+      run: cargo run --bin sender --release
       outputs:
         - image
       inputs:
@@ -17,7 +17,7 @@ nodes:
 
   - id: rayon_spawn
     custom:
-      run: ./target/release/rayon_spawn
+      run: cargo run --bin rayon_spawn --release
       inputs:
         image: sender/image
       outputs:
@@ -25,7 +25,7 @@ nodes:
 
   - id: tokio_spawn_blocking
     custom:
-      run: ./target/release/tokio_spawn_blocking
+      run: cargo run --bin tokio_spawn_blocking --release
       # run: flamegraph -o tokio_spawn_blocking.svg -- ./target/release/tokio_spawn_blocking
       inputs:
         image: sender/image
