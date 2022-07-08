@@ -17,7 +17,7 @@ fn main() -> eyre::Result<()> {
     // let mut handles = Vec::with_capacity(40);
     let rt = Builder::new_current_thread()
         .enable_all()
-        .worker_threads(2)
+        .worker_threads(1)
         .max_blocking_threads(5)
         .build()
         .unwrap();
@@ -33,7 +33,7 @@ fn main() -> eyre::Result<()> {
         let input = inputs.next().await.unwrap();
         let string_context = String::from_utf8_lossy(&input.data);
         let context = deserialize_context(&string_context);
-        for call_id in 0..100 {
+        for _ in 0..100 {
             let input = match inputs.next().await {
                 Some(input) => input,
                 None => {
@@ -41,14 +41,13 @@ fn main() -> eyre::Result<()> {
                     continue;
                 }
             };
+            let _span = tracer.start_with_context(format!("in_async_thread"), &context);
             let model = model.clone();
-            let _span =
-                tracer.start_with_context(format!("tokio.spawn.blocking.{call_id}"), &context);
 
             tokio::task::spawn_blocking(move || {
                 let _context = OTelContext::current_with_span(_span);
                 let tracer = global::tracer("name");
-                let __span = tracer.start_with_context("tokio-spawn", &_context);
+                let __span = tracer.start_with_context("in_sync_thread", &_context);
                 // run the model on the input
                 let image = preprocess(&input.data);
                 //let input_tensor_values = vec![image];

@@ -15,7 +15,7 @@ use opentelemetry::{
 async fn main() -> eyre::Result<()> {
     let node = DoraNode::init_from_env().await?;
 
-    let mut _interval = tokio::time::interval(Duration::from_millis(10));
+    let mut _interval = tokio::time::interval(Duration::from_secs(10));
 
     let image_output = DataId::from("image".to_owned());
     let img = image::open(&Path::new("./data/image2.jpg"))?;

@@ -5,7 +5,6 @@ use dora_tracing::{deserialize_context, init_tracing};
 use futures::StreamExt;
 
 use opentelemetry::{
-    global,
     trace::{TraceContextExt, Tracer},
     Context,
 };
@@ -61,12 +60,10 @@ fn main() -> eyre::Result<()> {
     let rx = Arc::new(Mutex::new(rx));
     (0..100)
         .into_par_iter()
-        .map(|call_id: i32| {
+        .map(|_: i32| {
             let data = rx.lock().unwrap().blocking_recv().unwrap();
-            let _span = tracer.start_with_context(format!("tokio.rayon.{call_id}"), &context);
+            let _span = tracer.start_with_context(format!("in_sync_thread"), &context);
             let _context = Context::current_with_span(_span);
-            let tracer = global::tracer("name");
-            let __span = tracer.start_with_context("tokio-spawn", &_context);
             let image = preprocess(&data);
             let _results = run(model, image);
         })

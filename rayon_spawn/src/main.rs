@@ -15,7 +15,7 @@ async fn main() -> eyre::Result<()> {
     let model = Arc::new(load_model_tract());
     let mut handles = Vec::with_capacity(40);
     let pool = rayon::ThreadPoolBuilder::new()
-        .num_threads(5)
+        .num_threads(6)
         .build()
         .unwrap();
     let node = DoraNode::init_from_env().await?;
@@ -27,8 +27,7 @@ async fn main() -> eyre::Result<()> {
     let input = inputs.next().await.unwrap();
     let string_context = String::from_utf8_lossy(&input.data);
     let context = deserialize_context(&string_context);
-    for call_id in 0..100 {
-        let _span = tracer.start_with_context(format!("rayon.spawn.{call_id}"), &context);
+    for _ in 0..100 {
         let input = match inputs.next().await {
             Some(input) => input,
             None => {
@@ -36,13 +35,14 @@ async fn main() -> eyre::Result<()> {
                 continue;
             }
         };
+        let _span = tracer.start_with_context(format!("in_async_thread"), &context);
         let model = model.clone();
 
         let (send, recv) = tokio::sync::oneshot::channel();
-        pool.spawn(move || {
+        pool.spawn_fifo(move || {
             let _context = Context::current_with_span(_span);
             let tracer = global::tracer("name");
-            let __span = tracer.start_with_context("tokio-spawn", &_context);
+            let __span = tracer.start_with_context("in_sync_thread", &_context);
             // run the model on the input
             let image = preprocess(&input.data);
             //let input_tensor_values = vec![image];
