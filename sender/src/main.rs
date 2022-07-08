@@ -10,14 +10,24 @@ use opentelemetry::{
     trace::{TraceContextExt, Tracer},
     Context,
 };
+use std::env::var;
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
+    let concurrencies = var("CONCURRENCIES")
+        .unwrap_or("10".to_string())
+        .parse::<u64>()?;
+    let iterations = var("ITERATIONS")
+        .unwrap_or("10".to_string())
+        .parse::<u64>()?;
+    let wait_interval = var("WAIT_INTERVAL_IN_SECS")
+        .unwrap_or("5".to_string())
+        .parse::<u64>()?;
+
     let node = DoraNode::init_from_env().await?;
 
-    let mut _interval = tokio::time::interval(Duration::from_secs(10));
+    let mut interval = tokio::time::interval(Duration::from_secs(wait_interval));
 
-    let image_output = DataId::from("image".to_owned());
     let img = image::open(&Path::new("./data/image2.jpg"))?;
     let img = img.as_rgb8().unwrap();
 
@@ -38,14 +48,20 @@ async fn main() -> eyre::Result<()> {
     let tracer = init_tracing("sender").unwrap();
     let span = tracer.start("root-sender");
     let context = Context::current_with_span(span);
-    let string_context = serialize_context(&context);
 
-    node.send_output(&image_output, string_context.as_bytes())
-        .await?;
+    let context_output = DataId::from("context".to_owned());
 
-    for _ in 0..100 {
-        //interval.tick().await;
-        node.send_output(&image_output, bytes).await?;
+    let image_output = DataId::from("image".to_owned());
+    for _ in 0..iterations {
+        interval.tick().await;
+        let span = tracer.start_with_context("child-sender", &context);
+        let context = Context::current_with_span(span);
+        let string_context = serialize_context(&context);
+        node.send_output(&context_output, string_context.as_bytes())
+            .await?;
+        for _ in 0..concurrencies {
+            node.send_output(&image_output, bytes).await?;
+        }
     }
 
     Ok(())
