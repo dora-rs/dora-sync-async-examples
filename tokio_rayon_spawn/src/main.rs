@@ -16,16 +16,12 @@ async fn main() -> eyre::Result<()> {
     let context = RwLock::new(OtelContext::new());
     let model = Arc::new(load_model_tract());
     let mut handles = Vec::with_capacity(40);
-    let pool = rayon::ThreadPoolBuilder::new()
-        .num_threads(6)
-        .build()
-        .unwrap();
     let node = DoraNode::init_from_env().await?;
 
     let mut inputs = node.inputs().await?;
     node.send_output(&DataId::from("mounted".to_owned()), b"")
         .await?;
-    let tracer = init_tracing("rayon.spawn").unwrap();
+    let tracer = init_tracing("tokio.rayon.spawn").unwrap();
     for _ in 0..number_of_calls {
         let input = match inputs.next().await {
             Some(input) => input,
@@ -42,7 +38,7 @@ async fn main() -> eyre::Result<()> {
                 let model = model.clone();
 
                 let (send, recv) = tokio::sync::oneshot::channel();
-                pool.spawn_fifo(move || {
+                rayon::spawn_fifo(move || {
                     let result = run(&model, &input.data, span);
                     send.send(result).unwrap();
                 });

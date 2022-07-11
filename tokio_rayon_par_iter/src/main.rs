@@ -5,30 +5,29 @@ use dora_tracing::{deserialize_context, init_tracing};
 use futures::StreamExt;
 
 use opentelemetry::trace::Tracer;
+use opentelemetry::Context as OtelContext;
 
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
-use std::sync::{Arc, Mutex};
+use std::env::var;
+use std::sync::{Arc, Mutex, RwLock};
 use tokio::runtime::Builder;
 use tokio::sync::mpsc;
 
 fn main() -> eyre::Result<()> {
+    let number_of_calls = var("NUMBER_OF_CALLS")
+        .unwrap_or("100".to_string())
+        .parse::<usize>()?;
     // let model = Arc::new(Mutex::new(load_model_gpu()));
-    let model = load_model_tract();
+    let context = RwLock::new(OtelContext::new());
 
-    let model = &model;
-
-    rayon::ThreadPoolBuilder::new()
-        .num_threads(5)
-        .build_global()
-        .unwrap();
     let rt = Builder::new_current_thread()
         .enable_all()
         .worker_threads(1)
         .build()
         .unwrap();
     let (tx, rx) = mpsc::channel(16);
-    let (tx_context, mut rx_context) = mpsc::channel(16);
-    let tracer = init_tracing("tokio.rayon").unwrap();
+
+    let tracer = init_tracing("tokio.rayon.par_iter").unwrap();
     std::thread::spawn(move || {
         rt.block_on(async move {
             let node = DoraNode::init_from_env().await.unwrap();
@@ -36,10 +35,6 @@ fn main() -> eyre::Result<()> {
             node.send_output(&DataId::from("mounted".to_owned()), b"")
                 .await
                 .unwrap();
-            let input = inputs.next().await.unwrap();
-            let string_context = String::from_utf8_lossy(&input.data);
-            let context = deserialize_context(&string_context);
-            tx_context.send(context).await.unwrap();
 
             for _ in 0..100 {
                 let input = match inputs.next().await {
@@ -49,18 +44,32 @@ fn main() -> eyre::Result<()> {
                         continue;
                     }
                 };
-                tx.send(input.data).await.unwrap();
+                tx.send(input).await.unwrap();
             }
         });
     });
-    let context = rx_context.blocking_recv().unwrap();
+
+    let model = load_model_tract();
+
+    let model = &model;
     let rx = Arc::new(Mutex::new(rx));
-    (0..100)
+    (0..number_of_calls)
         .into_par_iter()
-        .map(|_: i32| {
-            let data = rx.lock().unwrap().blocking_recv().unwrap();
-            let _span = tracer.start_with_context(format!("in_sync_thread"), &context);
-            let _results = run(model, &data, _span);
+        .map(|_: usize| {
+            let input = rx.lock().unwrap().blocking_recv().unwrap();
+            match input.id.as_str() {
+                "image" => {
+                    let context = context.read().unwrap();
+                    let span = tracer.start_with_context(format!("in_async_thread"), &context);
+                    let _results = run(model, &input.data, span);
+                }
+                "context" => {
+                    let mut context = context.write().unwrap();
+                    let string_context = String::from_utf8_lossy(&input.data);
+                    *context = deserialize_context(&string_context);
+                }
+                other => eprintln!("Ignoring unexpected input `{other}`"),
+            }
         })
         .collect::<Vec<_>>();
     Ok(())

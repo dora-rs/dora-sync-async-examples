@@ -15,6 +15,5 @@ dora-tracing = { git = "https://github.com/dora-rs/dora" }
 opentelemetry = { version = "0.17", features = ["rt-tokio", "metrics"] }
 rayon = "1.5.3"
 pollster = "0.2.5"
-tract-onnx = "0.17"
 
 common = { path = "../common" }
