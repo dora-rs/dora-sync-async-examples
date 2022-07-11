@@ -7,7 +7,7 @@ use futures::StreamExt;
 use opentelemetry::trace::Tracer;
 use opentelemetry::Context as OtelContext;
 
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use crossbeam_utils::thread;
 use std::env::var;
 use std::sync::{Arc, Mutex, RwLock};
 use tokio::runtime::Builder;
@@ -20,14 +20,15 @@ fn main() -> eyre::Result<()> {
     // let model = Arc::new(Mutex::new(load_model_gpu()));
     let context = RwLock::new(OtelContext::new());
 
-    let rt = Builder::new_current_thread()
+    let rt = Builder::new_multi_thread()
         .enable_all()
         .worker_threads(1)
         .build()
         .unwrap();
     let (tx, rx) = mpsc::channel(16);
 
-    let tracer = init_tracing("tokio.rayon.par_iter").unwrap();
+    let model = load_model_tract();
+    let tracer = init_tracing("tokio.crossbeam.scope").unwrap();
     std::thread::spawn(move || {
         rt.block_on(async move {
             let node = DoraNode::init_from_env().await.unwrap();
@@ -49,28 +50,33 @@ fn main() -> eyre::Result<()> {
         });
     });
 
-    let model = load_model_tract();
-
     let model = &model;
     let rx = Arc::new(Mutex::new(rx));
-    (0..number_of_calls)
-        .into_par_iter()
-        .map(|_: usize| {
-            let input = rx.lock().unwrap().blocking_recv().unwrap();
-            match input.id.as_str() {
-                "image" => {
-                    let context = context.read().unwrap();
-                    let span = tracer.start_with_context(format!("in_async_thread"), &context);
-                    let _results = run(model, &input.data, span);
-                }
-                "context" => {
-                    let mut context = context.write().unwrap();
-                    let string_context = String::from_utf8_lossy(&input.data);
-                    *context = deserialize_context(&string_context);
-                }
-                other => eprintln!("Ignoring unexpected input `{other}`"),
-            }
-        })
-        .collect::<Vec<_>>();
+
+    thread::scope(|s| {
+        (0..number_of_calls)
+            .into_iter()
+            .map(|_| {
+                s.spawn(|_| {
+                    let input = rx.lock().unwrap().blocking_recv().unwrap();
+                    match input.id.as_str() {
+                        "image" => {
+                            let context = context.read().unwrap();
+                            let span =
+                                tracer.start_with_context(format!("in_async_thread"), &context);
+                            let _results = run(model, &input.data, span);
+                        }
+                        "context" => {
+                            let mut context = context.write().unwrap();
+                            let string_context = String::from_utf8_lossy(&input.data);
+                            *context = deserialize_context(&string_context);
+                        }
+                        other => eprintln!("Ignoring unexpected input `{other}`"),
+                    }
+                })
+            })
+            .for_each(|handle| handle.join().unwrap())
+    })
+    .unwrap();
     Ok(())
 }

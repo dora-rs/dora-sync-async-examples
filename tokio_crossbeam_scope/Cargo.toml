@@ -1,0 +1,19 @@
+[package]
+name = "tokio_crossbeam_scope"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = { version = "1.17.0", features = ["full"] }
+dora-node-api = { path = "../../dora/api/rust/node" }
+eyre = "0.6.7"
+image = "0.24"
+futures = "0.3.21"
+dora-tracing = { git = "https://github.com/dora-rs/dora" }
+opentelemetry = { version = "0.17", features = ["rt-tokio", "metrics"] }
+crossbeam-utils = "0.8"
+pollster = "0.2.5"
+
+common = { path = "../common" }
