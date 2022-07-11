@@ -4,6 +4,11 @@ members = [
   "common",
   "sender",
   "tokio_spawn_blocking",
-  "rayon_spawn",
-  "tokio_rayon",
+  "tokio_rayon_par_iter",
+  "tokio_rayon_spawn",
+  "tokio_crossbeam_scope",
+  # Failing to compile `glommio`: https://github.com/DataDog/glommio/issues/557
+  # "glommio_spawn_blocking",
+  # `monoio` cannot function until: https://github.com/bytedance/monoio/issues/85 is fixed
+  # "monoio_rayon_spawn", 
 ]

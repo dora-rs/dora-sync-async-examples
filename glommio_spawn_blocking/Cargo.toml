@@ -1,0 +1,19 @@
+[package]
+name = "glommio_spawn_blocking"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dora-node-api = { git = "https://github.com/dora-rs/dora" }
+eyre = "0.6.7"
+image = "0.24"
+futures = "0.3.21"
+dora-tracing = { git = "https://github.com/dora-rs/dora" }
+opentelemetry = { version = "0.17", features = ["rt-tokio", "metrics"] }
+rayon = "1.5.3"
+pollster = "0.2.5"
+glommio = { git = "https://github.com/DataDog/glommio.git" }             # Glommio does not build on Crates.io
+membarrier = "0.2.2"
+common = { path = "../common" }
