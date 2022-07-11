@@ -15,7 +15,7 @@ monoio = { version = "0.0.6", features = [
   "utils",
   "debug",
 ] }
-dora-node-api = { path = "../../dora/api/rust/node" }
+dora-node-api = { git = "https://github.com/dora-rs/dora" }
 eyre = "0.6.7"
 image = "0.24"
 futures = "0.3.21"
